@@ -73,13 +73,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     BottomNavigationView bottomNavigationView;
     private GoogleMap mMap;
-    private CameraPosition mCameraPosition;
-    private Geofence geofence;
     private boolean isDataSentFromRecyclerView;
     // Search
     private SupportMapFragment mapFragment;
     SearchView searchView;
-    LatLng destionationLatLng;
 
 
     // The entry point to the Fused Location Provider.
@@ -98,7 +95,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
-    private String mLastKnownDestination;
 
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
@@ -116,13 +112,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         isDataSentFromRecyclerView = false;
         for (String value : recentDestinations) {
+            // You should always use a Log rather than just a s.o.pl
             System.out.println("value = " + value);
         }
 
         // Retrieve location and camera position from saved instance state.
         if (savedInstanceState != null) {
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-            mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+            CameraPosition mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
         // Retrieve the content view that renders the map.
         setContentView(R.layout.map_fragment);
@@ -152,6 +149,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         String addressFromRecyclerView = getIntent().getStringExtra("address");
         System.out.println("addressFromRecyclerView = " + addressFromRecyclerView);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        // Rather than saving this in sharedPreferences, you should just be able to use the intent to determine if it has the fields you need.
+        // SharedPreferences is one step too complicated for this.
         isDataSentFromRecyclerView = sharedPreferences.getBoolean("isRecyclerViewClicked5", false);
 //        isDataSentFromRecyclerView = false;
         System.out.println("isDataSentFromRecyclerView = " + isDataSentFromRecyclerView);
@@ -401,7 +400,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void setGeofence(double targetLat, double targetLong) {
         //// creating a geofence with lat long and radius
-        geofence = new Geofence.Builder()
+        Geofence geofence = new Geofence.Builder()
                 .setRequestId("destination")
                 .setCircularRegion(targetLat, targetLong, 300)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
@@ -428,7 +427,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onFailure(@NonNull Exception e) {
                         Log.d(TAG, "failed to add geofence :( ");
                         Log.e("ehr ERROR", e.toString());
-
+                        // I wish this would also show something to the user about the fact that the geofence wasn't added.
                     }
                 });
 
@@ -490,15 +489,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
         // dedup list of recent destinations
-        LinkedList<String> distinctRecentDestinations = new LinkedList<>();
-        HashSet<String> set = new HashSet<>();
-        for (String address : recentDestinations) {
-            set.add(address);
-        }
-        for (String address : set) {
-            distinctRecentDestinations.add(address);
-        }
+        // There are constructor methods for this, but also, this seems like you're deduping on load rather than save.
+        // That's confusing to me.
 
+        HashSet<String> set = new HashSet<>(recentDestinations);
+        LinkedList<String> distinctRecentDestinations = new LinkedList<>(set);
         return distinctRecentDestinations;
     }
 
@@ -572,7 +567,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void setDestination(Context context, String location) {
-        mLastKnownDestination = location;
         Context appContext = getApplicationContext();
         Geocoder geocoder = new Geocoder(appContext, Locale.getDefault());
         try {
@@ -617,12 +611,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 // Do something when user clicked the Yes button
-                                destionationLatLng = latLng;
+                                // why do we load this all the time? don't we only need to load it onResume, at most?
                                 recentDestinations = loadRecents();
                                 saveToRecents(destination);
-                                setGeofence(destionationLatLng.latitude, destionationLatLng.longitude);
+                                setGeofence(latLng.latitude, latLng.longitude);
                                 mMap.addCircle(new CircleOptions()
-                                        .center(destionationLatLng)
+                                        .center(latLng)
                                         .strokeColor(Color.argb(100, 98, 0, 238))
                                         .fillColor(Color.argb(50, 98, 0, 238))
                                         .radius(300f));
@@ -638,8 +632,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                 SharedPreferences storage = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-                                Boolean userGuidanceMode = storage.getBoolean("guidanceStatus", false);
-                                if (userGuidanceMode == true) {
+                                boolean userGuidanceMode = storage.getBoolean("guidanceStatus", false);
+                                if (userGuidanceMode) {
                                     passToGooglemap(latLng);
                                 }
                             }

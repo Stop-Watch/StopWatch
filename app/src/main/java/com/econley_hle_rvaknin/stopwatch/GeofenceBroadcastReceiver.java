@@ -15,6 +15,7 @@ import com.google.android.gms.location.GeofencingEvent;
 
 import java.util.List;
 
+// You should probably cite https://developer.android.com/training/location/geofencing somewhere in this class...
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
     static String CHANNEL_ID = "101";
