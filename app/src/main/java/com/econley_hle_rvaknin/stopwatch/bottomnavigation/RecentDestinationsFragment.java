@@ -28,9 +28,6 @@ import java.util.LinkedList;
 
 /**
  * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
  */
 public class RecentDestinationsFragment extends Fragment {
     RecyclerView recyclerView;
@@ -39,7 +36,6 @@ public class RecentDestinationsFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
     private int mColumnCount = 1;
-    private OnListFragmentInteractionListener mListener;
     private RecyclerViewAdapter adapter;
     private LinkedList<String> recentDestinations;
     Activity activity;
@@ -92,45 +88,18 @@ public class RecentDestinationsFragment extends Fragment {
         return view;
     }
 
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         recentDestinations = loadRecents();
-        adapter = new RecyclerViewAdapter(recentDestinations, null, activity);
+        adapter = new RecyclerViewAdapter(recentDestinations);
         recyclerView.setAdapter(adapter);
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onListFragmentInteraction(String item);
-    }
-
+    // oh nooooooo
+    // the copy pasta
+    // it burns
+    // this code really should've been in a reusable class where both your MapActivity and this Fragment could call it.
     private LinkedList<String> loadRecents() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         Gson gson = new Gson();
@@ -143,15 +112,8 @@ public class RecentDestinationsFragment extends Fragment {
         }
 
         // dedup list of recent destinations
-        LinkedList<String> distinctRecentDestinations = new LinkedList<>();
-        HashSet<String> set = new HashSet<>();
-        for (String address : recentDestinations) {
-            set.add(address);
-        }
-        for (String address : set) {
-            distinctRecentDestinations.add(address);
-        }
+        HashSet<String> set = new HashSet<>(recentDestinations);
 
-        return distinctRecentDestinations;
+        return new LinkedList<>(set);
     }
 }

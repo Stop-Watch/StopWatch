@@ -25,15 +25,12 @@ import java.util.Locale;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
+    // Lots of code in this class that wasn't relevant or doing anything.
     private final String TAG = "rvrv";
     private LinkedList<String> mValues;
-    private Activity mActivity;
-    private final RecentDestinationsFragment.OnListFragmentInteractionListener mListener;
 
-    public RecyclerViewAdapter(LinkedList<String> items, RecentDestinationsFragment.OnListFragmentInteractionListener listener, Activity mActivity) {
+    public RecyclerViewAdapter(LinkedList<String> items) {
         mValues = items;
-        mListener = listener;
-        mActivity = mActivity;
     }
 
     @Override
@@ -49,7 +46,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.mTitleView.setText(mValues.get(position));
         holder.mView.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                String strAddress = mValues.get(position);
+                // the whole point of saving it in the holder was that you don't have to go back to the list
+                String strAddress = holder.mItem;
                 System.out.println("strAddress = " + strAddress);
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(v.getContext());
                 SharedPreferences.Editor editor = sharedPref.edit();
