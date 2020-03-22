@@ -26,11 +26,11 @@ Android Emulator
 
 ## Screenshots
 <img src="/assets/runningApp/HomeSS.png" width="397" height="836">
-![](/assets/runningApp/recent-destinations.png)
+<img src="/assets/runningApp/recent-destinations.png" width="397" height="836">
 <img src="/assets/runningApp/search.png" width="397" height="836">
 <img src="/assets/runningApp/dialog.png" width="397" height="836">
 <img src="/assets/runningApp/geofence.png" width="397" height="836">
-<img src="/assets/runningApp/setting.png" width="397" height="836">
+<img src="/assets/runningApp/settings.png" width="397" height="836">
 
 ## Authors
 - [Ellen Conley](https://github.com/egconley)
